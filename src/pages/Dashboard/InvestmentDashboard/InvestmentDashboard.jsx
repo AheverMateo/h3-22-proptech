@@ -1,19 +1,50 @@
 import Footer from "../../../components/Footer/Footer";
 import NavBar from "../../../components/NavBar/NavBar";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReactECharts from "echarts-for-react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios"
+import useUserStore from "../../../zustand/UserId";
+
 
 const InvestmentDashboard = () => {
   const [activeTab, setActiveTab] = useState("Panel de Control");
+  const [investment, setInvestment] = useState([]);
+  const userPJ = useUserStore((state) => state.idPF);
+  console.log(investment);
+  
+  const navigate = useNavigate() 
 
   const tabs = [
-    "Panel de Control",
-    "Mis Inversiones",
-    "Simulador",
-    "Mis Transacciones",
-    "Mis Documentos",
+    { name: "Panel de Control", route: "/dashboard" },
+    { name: "Mis Inversiones", route: "/dashboardInvestment" },
+    { name: "Simulador", route: "/dashboardSimulator" },
+    { name: "Mis Transacciones", route: "/dashboardTansactions" },
+    { name: "Mis Documentos", route: "/dashboardDocumets" },
   ];
+
+  const handleTabClick = (tab) => {
+    setActiveTab(tab.name); 
+    navigate(tab.route);
+  };
+
+  useEffect(()=> {
+    getInvestment()
+  },[])
+
+  const getInvestment = async () => {
+    try {
+      const response = await axios(
+        `http://149.50.139.181:9698/v1/api/investment/listInv/${userPJ}`
+      );
+      console.log(response.data);
+      setInvestment(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
 
   const cards = [
     {
@@ -65,7 +96,7 @@ const InvestmentDashboard = () => {
     ],
     series: [
       {
-        name: "Direct",
+        name: "",
         type: "bar",
         barWidth: "20%",
         data: [3, 33, 22, 34, 44, 66, ],
@@ -82,14 +113,14 @@ const InvestmentDashboard = () => {
             {tabs.map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={()=>handleTabClick(tab)}
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
-                  activeTab === tab
+                  activeTab === tab.name
                     ? "text-white border-b-2 border-white"
                     : "text-white hover:text-gray-200"
                 }`}
               >
-                {tab}
+                {tab.name}
               </button>
             ))}
           </div>

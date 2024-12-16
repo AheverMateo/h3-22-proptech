@@ -3,26 +3,58 @@ import { useForm } from "react-hook-form";
 import { useRegFormContext } from "../../Context/RegFromProvider";
 import people2 from "../../assets/img/couple-holding-small-house-medium-shot 1.png";
 import ProgresBar from "../ProgresBar/ProgresBar";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import useUserStore from "../../zustand/UserId";
+import axios from "axios";
 
 const RegisterLocation = () => {
   const [, dispatch] = useRegFormContext();
+  const idPF = useUserStore((state) => state.idPF)
+  console.log(idPF);
+  
   const {
     register,
     handleSubmit,
     formState: { IsValid },
+    watch
   } = useForm();
+
+  const infoForm = watch()
+
+  console.log(infoForm);
+
+  const navigate = useNavigate()
+  
 
   useEffect(() => {
     dispatch({ type: "CHANGE_PERCENT", data: 50 });
   }, []);
 
-  const onSubmit = (values) => {
-    if (IsValid) {
-      dispatch({ type: "SET_ADDRESS_DATA", data: values });
+  const onSubmit = async (data) => {
+    if (!idPF) {
+      console.error("No se encontro el idPF");
+      return;
+    }
+    const payload = {
+      ...data,
+      idPF,
+    };
+
+    try {
+      const response = await axios.put(
+        "http://149.50.139.181:9698/v1/api/personaFisica/update",
+        payload
+      );
+      console.log("Datos enviados:", response.data);
+      navigate("/document2")
+    } catch (error) {
+      console.error(error);
     }
   };
 
+  const handleNext = () => {
+    handleSubmit(onSubmit)();
+  };
   return (
     <div className="flex justify-between">
       <div className="">
@@ -60,35 +92,25 @@ const RegisterLocation = () => {
           <div className="">
             <label className="font-inter">Calle</label>
             <input
-              {...register("documento", { required: true })}
+              {...register("address", { required: true })}
               className="w-full border px-3 py-2 rounded-lg"
             />
           </div>
-          <div className="flex gap-2 justify-center">
-            <div className="">
-              <label className="font-inter">Numeracion/Altura</label>
-              <input
-                {...register("numeracion", { required: true })}
-                className="w-full rounded-md border py-2 px-3 border-gray-300"
-              />
-            </div>
             <div className="">
               <label className="font-inter">Codigo Poatal</label>
               <input
-                {...register("codigo", { required: true })}
+                {...register("postalCode", { required: true })}
                 className="w-full rounded-md border py-2 px-3 border-gray-300"
               />
             </div>
-          </div>
         </form>
-        <Link to="/document2">
           <button
             type="submit"
             className="bg-[#396AD3] text-white px-4 py-2 rounded w-80"
+            onClick={handleNext}
           >
             Siguiente
           </button>
-        </Link>
       </div>
     </div>
   );

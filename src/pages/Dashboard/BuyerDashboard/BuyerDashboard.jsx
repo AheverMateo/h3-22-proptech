@@ -5,23 +5,24 @@ import graphic from "../../../assets/img/Progress Pie Chart.png"
 
 import { useState } from "react";
 import ReactECharts from "echarts-for-react";
-
+import { useNavigate } from "react-router-dom";
 import { IoIosArrowForward } from "react-icons/io";
+
 
 const BuyerDsahboard = () => {
   const [activeTab, setActiveTab] = useState("Panel de Control");
   const [progress, setProgress] = useState(50); // Estado inicial del progreso
-
+  const navigate = useNavigate()
   const cuotasAbonadas = 2;
   const totalCuotas = 180;
   const progreso = (cuotasAbonadas / totalCuotas) * 100;
 
   const tabs = [
-    "Panel de Control",
-    "Mis Creditos",
-    "Simulador",
-    "Mis Transacciones",
-    "Mis Documentos",
+    { name: "Panel de Control", route: "/dashboardBuyer" },
+    { name: "Mis Creditos", route: "/buyerCredits" },
+    { name: "Simulador", route: "/buyerSimulator" },
+    { name: "Mis Transacciones", route: "/buyerTransaction" },
+    { name: "Mis Documentos", route: "/buyerDocuments" },
   ];
 
   const option = {
@@ -55,6 +56,12 @@ const BuyerDsahboard = () => {
       },
     ],
   };
+
+  const handleTabClick = (tab) => {
+    setActiveTab(tab.name);
+    navigate(tab.route);
+  };
+
   return (
     <div>
       <NavBar />
@@ -63,15 +70,15 @@ const BuyerDsahboard = () => {
           <div className="container mx-auto flex pl-11 py-6">
             {tabs.map((tab) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
+                key={tab.name}
+                onClick={() => handleTabClick(tab)}
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
-                  activeTab === tab
+                  activeTab === tab.name
                     ? "text-white border-b-2 border-white"
                     : "text-white hover:text-gray-200"
                 }`}
               >
-                {tab}
+                {tab.name}
               </button>
             ))}
           </div>
@@ -98,7 +105,7 @@ const BuyerDsahboard = () => {
                 <h3 className="text-xl font-bold font-inter">
                   Total Financiado
                 </h3>
-                <p className="text-2xl font-semibold font-inter">%10.000</p>
+                <p className="text-2xl font-semibold font-inter">$10.000</p>
                 <div className="flex items-center gap-1">
                   <p className=" bg-[#89AEFF54] text-[#2A61D8] text-sm font-semibold px-2 py-1 rounded">
                     18%

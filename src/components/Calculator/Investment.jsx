@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { IoIosArrowForward } from "react-icons/io";
 import {
   Table,
@@ -7,36 +8,72 @@ import {
   TableHead,
   TableHeaderCell,
 } from "@tremor/react";
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import useTableInfo from "../../zustand/TableInfo";
+import { Link } from "react-router-dom";
+
+//22000, 24, 11,2
 
 const Investment = () => {
-  const data = [
+  const { register, handleSubmit } = useForm();
+  const [data, setData] = useState([]);
+  const { setTable } = useTableInfo();
+
+
+
+
+  const onSubmit = async (formData) => {
+    const { monto, cuotas, tna } = formData;
+    try {
+      const response = await axios.get(
+        `http://149.50.139.181:9698/v1/api/loan/simulation`,
+        {
+          params: {
+            capital: monto,
+            nPayments: cuotas,
+            TNA: tna,
+          },
+        }
+      );
+      const allData = response.data;
+      const firstFour = allData.slice(0, 4);
+      const lastTwo = allData.slice(-2);
+      setData([...firstFour, ...lastTwo]);
+      setTable(allData);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const exampleData = [
     {
-      cuota: 1,
-      capitalInicial: "$10,000.00",
-      amortizacion: "$0.64",
-      interes: "$358.33",
-      pagoTotal: "$358.97",
+      nroFee: "1",
+      capital: 10000,
+      amortization: 200,
+      interest: 50,
+      fee: 250,
     },
     {
-      cuota: 2,
-      capitalInicial: "$9,999.36",
-      amortizacion: "$0.66",
-      interes: "$358.31",
-      pagoTotal: "$358.97",
+      nroFee: "2",
+      capital: 9800,
+      amortization: 200,
+      interest: 49,
+      fee: 249,
     },
     {
-      cuota: 3,
-      capitalInicial: "$9,998.71",
-      amortizacion: "$0.68",
-      interes: "$358.29",
-      pagoTotal: "$358.97",
+      nroFee: "3",
+      capital: 9800,
+      amortization: 200,
+      interest: 49,
+      fee: 249,
     },
     {
-      cuota: 4,
-      capitalInicial: "$9,998.03",
-      amortizacion: "$0.71",
-      interes: "$358.26",
-      pagoTotal: "$358.97",
+      nroFee: "4",
+      capital: 9800,
+      amortization: 200,
+      interest: 49,
+      fee: 249,
     },
   ];
 
@@ -44,15 +81,30 @@ const Investment = () => {
     <div className="flex justify-between p-8">
       <div className="flex flex-col justify-evenly ml-5">
         <h3 className="font-inter font-semibold text-white text-3xl">
-          Simulador de inversiones
+          Simulador de Financiamiento
         </h3>
-        <form className="flex flex-col gap-3 w-64">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col gap-3 w-64"
+        >
           <label className="text-white font-inter text-sm">Monto*</label>
-          <input type="text" className="bg-white px-3 py-2 rounded-md" />
+          <input
+            {...register("monto", { required: true })}
+            type="text"
+            className="bg-white px-3 py-2 rounded-md"
+          />
           <label className="text-white font-inter text-sm">Cuotas*</label>
-          <input type="text" className="bg-white px-3 py-2 rounded-md" />
+          <input
+            {...register("cuotas", { required: true })}
+            type="text"
+            className="bg-white px-3 py-2 rounded-md"
+          />
           <label className="text-white font-inter text-sm">TNA(%)*</label>
-          <input type="text" className="bg-white px-3 py-2 rounded-md" />
+          <input
+            {...register("tna", { required: true })}
+            type="text"
+            className="bg-white px-3 py-2 rounded-md"
+          />
           <button className=" flex items-center justify-between w-52 rounded-md py-2 px-4 bg-[#D9FB41]">
             Calcular <IoIosArrowForward />
           </button>
@@ -63,33 +115,66 @@ const Investment = () => {
       </div>
 
       <div className="w-[700px]">
-        <p className="text-end text-white p-2">Ver completo</p>
-          <Table className="bg-white rounded-md shadow">
-            <TableHead className="bg-[#EDEDED]">
-              <TableRow className="border border-gray-800">
-                <TableHeaderCell className=" font-inter border border-gray-500">Cuota Nº</TableHeaderCell>
-                <TableHeaderCell className=" font-inter border border-gray-500">Capital Inicial</TableHeaderCell>
-                <TableHeaderCell className=" font-inter border border-gray-500">Amortización</TableHeaderCell>
-                <TableHeaderCell className=" font-inter border border-gray-500">Interés</TableHeaderCell>
-                <TableHeaderCell className=" font-inter border border-gray-500">Pago Total</TableHeaderCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {data.map((row, index) => (
+        <Link to="/tableComplete">
+          <p className="text-end text-white p-2">Ver completo</p>
+        </Link>
+        <Table className="bg-white rounded-md shadow">
+          <TableHead className="bg-[#EDEDED]">
+            <TableRow className="border border-gray-800">
+              <TableHeaderCell className=" font-inter border border-gray-500">
+                Cuota Nº
+              </TableHeaderCell>
+              <TableHeaderCell className=" font-inter border border-gray-500">
+                Capital Inicial
+              </TableHeaderCell>
+              <TableHeaderCell className=" font-inter border border-gray-500">
+                Amortización
+              </TableHeaderCell>
+              <TableHeaderCell className=" font-inter border border-gray-500">
+                Interés
+              </TableHeaderCell>
+              <TableHeaderCell className=" font-inter border border-gray-500">
+                Pago Total
+              </TableHeaderCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {(data.length > 0 ? data : exampleData).map((row, index) => {
+               if (data.length > 0 && index >= data.length - 2) {
+                row.nroFee = `...${row.nroFee}`;
+              }
+              return (
                 <TableRow key={index}>
-                  <TableCell className="border border-[#5B5B5B] font-inter">{row.cuota}</TableCell>
-                  <TableCell className="border border-[#5B5B5B] font-inter">{row.capitalInicial}</TableCell>
-                  <TableCell className="border border-[#5B5B5B] font-inter">{row.amortizacion}</TableCell>
-                  <TableCell className="border border-[#5B5B5B] font-inter">{row.interes}</TableCell>
-                  <TableCell className="border border-[#5B5B5B] font-inter">{row.pagoTotal}</TableCell>
+                  <TableCell className="border border-[#5B5B5B] font-inter">
+                    {row.nroFee}
+                  </TableCell>
+                  <TableCell className="border border-[#5B5B5B] font-inter">
+                    {row.capital}
+                  </TableCell>
+                  <TableCell className="border border-[#5B5B5B] font-inter">
+                    {row.amortization}
+                  </TableCell>
+                  <TableCell className="border border-[#5B5B5B] font-inter">
+                    {row.interest}
+                  </TableCell>
+                  <TableCell className="border border-[#5B5B5B] font-inter">
+                    {row.fee}
+                  </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <div className="flex justify-end pt-5 gap-5">
-          <button className="bg-[#D9FB41] px-7 py-2 rounded-md font-inter">Quiero mi simulacion</button>
-          <button className="border border-white px-9 py-2  rounded-md font-inter text-white">Imprimir PDF</button>
-          </div>
+              );
+            })}
+          </TableBody>
+        </Table>
+        <div className="flex justify-end pt-5 gap-5">
+          <button className="bg-[#D9FB41] px-7 py-2 rounded-md font-inter">
+            <Link to="/register">
+            Quiero mi simulacion
+            </Link>
+          </button>
+          <a href="http://149.50.139.181:9698/v1/api/loan/reporte?capital=22000&nPayments=24&TNA=11.2" className="border border-white px-9 py-2  rounded-md font-inter text-white">
+            Imprimir PDF
+          </a>
+        </div>
       </div>
     </div>
   );
