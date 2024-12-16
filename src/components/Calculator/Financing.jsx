@@ -1,23 +1,50 @@
 import { useState } from "react";
 import { IoIosArrowForward } from "react-icons/io";
 import ReactECharts from "echarts-for-react";
+import { useForm } from "react-hook-form";
+import axios from "axios";
 
 const Financing = () => {
+
+  const {register, handleSubmit, watch} = useForm()
+  const [graphic ,setGraphic] = useState([])
+
+  console.log(graphic);
+  
+
+  const onSubmit = async (formData) =>{
+    const {monto, plazo } = formData
+    try {
+      const response = await axios.get(`http://149.50.139.181:9698/v1/api/investment/simulation`,
+        {
+          params: {
+            deposit: monto,
+            nPayments: plazo
+          }
+        }
+      )
+      setGraphic(response.data)
+    } catch (error) {
+      console.log(error);
+      
+    }
+  }
+
   const chartOptions = {
     title: {
-      text: "{title|Total estimado de ganancia} {subtext|16%}", // Combina título y subtítulo
-      left: "", // Centra el texto
+      text: `{title|Total estimado de ganancia} {subtext|${graphic.tir || 0}}`, 
+      left: "", 
       textStyle: {
         rich: {
           title: {
-            color: "#000", // Color del título
-            fontSize: 16, // Tamaño del título
-            fontWeight: "bold", // Peso del título
+            color: "#000", 
+            fontSize: 16, 
+            fontWeight: "bold", 
           },
           subtext: {
-            color: "#02C009", // Color del subtítulo
-            fontSize: 14, // Tamaño del subtítulo
-            fontWeight: "bold", // Peso del subtítulo
+            color: "#02C009", 
+            fontSize: 14, 
+            fontWeight: "bold",
           },
         },
       },
@@ -28,7 +55,7 @@ const Financing = () => {
     xAxis: {
       type: "category",
       boundaryGap: false,
-      data: ["Hoy", "12 meses"],
+      data: ["Hoy", `${graphic.npayments || 12} meses`],
     },
     yAxis: {
       type: "value",
@@ -41,7 +68,10 @@ const Financing = () => {
         name: "Ganancia",
         type: "line",
         areaStyle: {},
-        data: [0, 11000, 11600], // Datos iniciales
+        data: [
+          graphic.deposit || 0,
+          graphic.capital || 122  
+        ], 
         itemStyle: {
           color: "#6269F2", // Color del área
         },
@@ -61,13 +91,13 @@ const Financing = () => {
         <h3 className="font-inter font-semibold text-white text-3xl">
           Simulador de inversiones
         </h3>
-        <form className="flex flex-col gap-3 w-64">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3 w-64">
           <label className="text-white font-inter text-sm">Monto*</label>
-          <input type="text" className="bg-white px-3 py-2 rounded-md" />
+          <input {...register("monto", {required: true})} type="text" className="bg-white px-3 py-2 rounded-md" />
           <label className="text-white font-inter text-sm">
             Plazo (en meses)*
           </label>
-          <input type="text" className="bg-white px-3 py-2 rounded-md" />
+          <input {...register("plazo", {required:true})} type="text" className="bg-white px-3 py-2 rounded-md" />
           <button className=" flex items-center justify-between w-52 rounded-md py-2 px-4 bg-[#D9FB41]">
             Calcular <IoIosArrowForward />
           </button>

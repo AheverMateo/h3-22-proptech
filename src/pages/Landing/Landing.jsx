@@ -11,6 +11,7 @@ import { IoIosArrowForward } from "react-icons/io";
 import { FaWallet } from "react-icons/fa";
 import { GoGraph } from "react-icons/go";
 import { IoIosAddCircle, IoMdRemoveCircle } from "react-icons/io";
+import { Link } from "react-router-dom";
 
 import Card1 from "../../assets/icons/imagenChanchito.png";
 import Card2 from "../../assets/icons/Maceta.png";
@@ -18,6 +19,8 @@ import Card3 from "../../assets/icons/Defensa.png";
 
 import { useState } from "react";
 import Investment from "../../components/Calculator/Investment";
+
+
 
 const Landing = () => {
   const [activeTab, setActiveTab] = useState("invertir");
@@ -384,7 +387,9 @@ const Landing = () => {
             </div>
           </div>
           <button className="font-inter text-sm bg-white rounded-md px-4 py-2 ml-10">
+            <Link to="/register">
             ¡Quiero Comenzar Hoy!
+            </Link>
           </button>
         </div>
       </section>

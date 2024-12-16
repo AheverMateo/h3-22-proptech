@@ -1,15 +1,32 @@
 import { useEffect } from "react";
 import ProgresBar from "../ProgresBar/ProgresBar";
 import { useRegFormContext } from "../../Context/RegFromProvider";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import useUserStore from "../../zustand/UserId";
 
 const RegisterInfo = () => {
+
+  const userLog= useUserStore((state)=> state.userLog)
+  const navigate = useNavigate()
+
+  console.log(userLog);
+  
+
+  const handleClick = () => {
+    if (userLog === "INVERSOR") {
+      navigate("/dashboard")
+    } else if (userLog === "PRESTAMO") {
+        navigate("/dashboardBuyer")
+    }
+
+  }
 
   const [, dispatch] = useRegFormContext();
 
   useEffect(() => {
     dispatch({ type: "CHANGE_PERCENT", data: 100 });
   }, []);
+  
   return (
     <div className="h-screen w-screen flex flex-col items-center gap-7">
       <h1 className="text-2xl font-semibold pt-5">
@@ -62,9 +79,7 @@ const RegisterInfo = () => {
           Acepto los términos y condiciones
         </p>
         </div>
-        <Link to="/dashboard">
-      <button className="bg-[#396AD3] px-3 py-2 rounded-md text-white font-inter">Confirmar y Finalizar Registro</button>
-        </Link>
+      <button onClick={handleClick} className="bg-[#396AD3] px-3 py-2 rounded-md text-white font-inter">Confirmar y Finalizar Registro</button>
       </div>
     </div>
   );
